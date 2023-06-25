@@ -19,4 +19,5 @@ public class WalletDto {
     @PositiveOrZero
     @Builder.Default
     private BigDecimal quantity = BigDecimal.valueOf(0);
+    private Long userId;
 }

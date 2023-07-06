@@ -1,7 +1,7 @@
 package com.microservices.wallet.controller;
 
+import com.microservices.wallet.dto.TransactionDto;
 import com.microservices.wallet.dto.WalletDto;
-import com.microservices.wallet.dto.WithdrawDto;
 import com.microservices.wallet.exception.NotEnoughFoundsException;
 import com.microservices.wallet.exception.WalletNotFoundException;
 import com.microservices.wallet.mapper.WalletMapper;
@@ -10,10 +10,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
-
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("v1/wallet")
 public class WalletController {
 
     private final WalletService walletService;
@@ -25,19 +24,24 @@ public class WalletController {
         return ResponseEntity.ok(walletMapper.mapToWalletDto(wallet));
     }
 
+    @PostMapping("/create")
+    public ResponseEntity<Void> createWalletForNewUser(@RequestParam("userId") Long userId) {
+        walletService.createWallet(userId);
+        return ResponseEntity.ok().build();
+    }
+
     @PutMapping("/withdraw/{userId}")
     public ResponseEntity<WalletDto> withdrawMoney(
             @PathVariable Long userId,
-            @RequestBody WithdrawDto withDrawDto) throws WalletNotFoundException, NotEnoughFoundsException {
-        var wallet = walletService.withdrawMoney(userId, withDrawDto);
+            @RequestBody TransactionDto transactionDto) throws WalletNotFoundException, NotEnoughFoundsException {
+        var wallet = walletService.withdrawMoney(userId, transactionDto);
         return ResponseEntity.ok(walletMapper.mapToWalletDto(wallet));
     }
 
-    @PutMapping("/deposit/{userId}")
+    @PutMapping("/deposit")
     public ResponseEntity<WalletDto> depositMoney(
-            @PathVariable Long userId,
-            @RequestParam BigDecimal quantity) throws WalletNotFoundException {
-        var wallet = walletService.depositMoney(userId, quantity);
+            @RequestBody TransactionDto transactionDto) throws WalletNotFoundException {
+        var wallet = walletService.depositMoney(transactionDto);
         return ResponseEntity.ok(walletMapper.mapToWalletDto(wallet));
     }
 }

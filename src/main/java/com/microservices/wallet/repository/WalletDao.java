@@ -1,6 +1,6 @@
 package com.microservices.wallet.repository;
 
-import com.microservices.wallet.domain.Wallet;
+import com.microservices.wallet.entity.Wallet;
 import jakarta.transaction.Transactional;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;

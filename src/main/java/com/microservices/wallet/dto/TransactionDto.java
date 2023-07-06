@@ -6,7 +6,10 @@ import lombok.Setter;
 import java.math.BigDecimal;
 
 @Getter
-public class WithdrawDto {
-    private String accountNumber;
+@Setter
+public class TransactionDto {
+    private Long userId;
+    private String symbol;
     private BigDecimal quantity;
+
 }

@@ -1,7 +1,7 @@
 package com.microservices.wallet.service;
 
-import com.microservices.wallet.domain.Wallet;
-import com.microservices.wallet.dto.WithdrawDto;
+import com.microservices.wallet.dto.TransactionDto;
+import com.microservices.wallet.entity.Wallet;
 import com.microservices.wallet.exception.NotEnoughFoundsException;
 import com.microservices.wallet.exception.WalletNotFoundException;
 import com.microservices.wallet.repository.WalletDao;
@@ -22,23 +22,30 @@ public class WalletService {
         return walletDao.findByUserId(userId).orElseThrow(WalletNotFoundException::new);
     }
 
-    public Wallet withdrawMoney(Long userId, WithdrawDto withDrawDto) throws WalletNotFoundException, NotEnoughFoundsException {
+    public Wallet withdrawMoney(Long userId, TransactionDto transactionDto) throws WalletNotFoundException, NotEnoughFoundsException {
         var wallet = walletDao.findByUserId(userId).orElseThrow(WalletNotFoundException::new);
-        if (wallet.getQuantity().compareTo(withDrawDto.getQuantity()) < 0) {
+        if (wallet.getQuantity().compareTo(transactionDto.getQuantity()) < 0) {
             log.error("Not enough funds to process withdraw for user ID: " + userId +
                     ". Actual account balance: " + wallet.getQuantity());
             throw new NotEnoughFoundsException();
         }
-        wallet.setQuantity(wallet.getQuantity().subtract(withDrawDto.getQuantity()));
+        wallet.setQuantity(wallet.getQuantity().subtract(transactionDto.getQuantity()));
         //todo saveWithdrawToHistory(user, withDrawDto.getAccountNumber(), withDrawDto.getQuantity());
         return walletDao.save(wallet);
     }
 
-    public Wallet depositMoney(Long userId, BigDecimal quantity) throws WalletNotFoundException {
+    public Wallet depositMoney(TransactionDto transactionDto) throws WalletNotFoundException {
+        long userId = transactionDto.getUserId();
         var wallet = walletDao.findByUserId(userId).orElseThrow(WalletNotFoundException::new);
-         //todo add externalservice quantityUSD = nbpService.exchangePlnToUsd(quantityPLN);
-        wallet.setQuantity(wallet.getQuantity().add(quantity));
-        //todo add historysaveDepositToHistory(user, quantityUSD, quantityPLN);
+         //todo add external service quantityUSD = nbpService.exchangePlnToUsd(quantityPLN);
+        wallet.setQuantity(wallet.getQuantity().add(transactionDto.getQuantity()));
+        //todo add history saveDepositToHistory(user, quantityUSD, quantityPLN);
+        return walletDao.save(wallet);
+    }
+
+    public Wallet createWallet(Long userId) {
+        Wallet wallet = new Wallet();
+        wallet.setUserId(userId);
         return walletDao.save(wallet);
     }
 }

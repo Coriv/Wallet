@@ -1,4 +1,4 @@
-package com.microservices.wallet.domain;
+package com.microservices.wallet.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;

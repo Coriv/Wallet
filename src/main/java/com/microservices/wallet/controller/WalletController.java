@@ -2,7 +2,8 @@ package com.microservices.wallet.controller;
 
 import com.microservices.wallet.dto.TransactionDto;
 import com.microservices.wallet.dto.WalletDto;
-import com.microservices.wallet.exception.NotEnoughFoundsException;
+import com.microservices.wallet.exception.NotEmptyWalletException;
+import com.microservices.wallet.exception.NotEnoughFundsException;
 import com.microservices.wallet.exception.WalletNotFoundException;
 import com.microservices.wallet.mapper.WalletMapper;
 import com.microservices.wallet.service.WalletService;
@@ -33,7 +34,7 @@ public class WalletController {
     @PutMapping("/withdraw/{userId}")
     public ResponseEntity<WalletDto> withdrawMoney(
             @PathVariable Long userId,
-            @RequestBody TransactionDto transactionDto) throws WalletNotFoundException, NotEnoughFoundsException {
+            @RequestBody TransactionDto transactionDto) throws WalletNotFoundException, NotEnoughFundsException {
         var wallet = walletService.withdrawMoney(userId, transactionDto);
         return ResponseEntity.ok(walletMapper.mapToWalletDto(wallet));
     }
@@ -43,5 +44,11 @@ public class WalletController {
             @RequestBody TransactionDto transactionDto) throws WalletNotFoundException {
         var wallet = walletService.depositMoney(transactionDto);
         return ResponseEntity.ok(walletMapper.mapToWalletDto(wallet));
+    }
+
+    @DeleteMapping("/delete/{userId}")
+    public ResponseEntity<Void> deleteWallet(@PathVariable Long userId) throws WalletNotFoundException, NotEmptyWalletException {
+        walletService.deleteWallet(userId);
+        return ResponseEntity.ok().build();
     }
 }

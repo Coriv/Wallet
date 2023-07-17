@@ -2,7 +2,8 @@ package com.microservices.wallet;
 
 import com.microservices.wallet.dto.TransactionDto;
 import com.microservices.wallet.entity.Wallet;
-import com.microservices.wallet.exception.NotEnoughFoundsException;
+import com.microservices.wallet.exception.NotEmptyWalletException;
+import com.microservices.wallet.exception.NotEnoughFundsException;
 import com.microservices.wallet.exception.WalletNotFoundException;
 import com.microservices.wallet.repository.WalletDao;
 import com.microservices.wallet.service.WalletService;
@@ -16,8 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.math.BigDecimal;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -48,7 +48,7 @@ public class WalletServiceTestSuite {
     }
 
     @Test
-    public void testWithdrawMoneySufficientFunds() throws WalletNotFoundException, NotEnoughFoundsException {
+    public void testWithdrawMoneySufficientFunds() throws WalletNotFoundException, NotEnoughFundsException {
         BigDecimal currentBalance = BigDecimal.valueOf(100);
         BigDecimal withdrawAmount = BigDecimal.valueOf(50);
         wallet.setQuantity(currentBalance);
@@ -82,7 +82,7 @@ public class WalletServiceTestSuite {
 
         when(walletDao.findByUserId(userId)).thenReturn(Optional.of(wallet));
         // when & then
-        assertThrows(NotEnoughFoundsException.class, () -> service.withdrawMoney(userId, transactionDto));
+        assertThrows(NotEnoughFundsException.class, () -> service.withdrawMoney(userId, transactionDto));
     }
 
 
@@ -106,5 +106,26 @@ public class WalletServiceTestSuite {
         assertEquals(wallet, result);
         assertEquals(currentBalance.add(depositAmount), result.getQuantity());
         verify(walletDao, times(1)).save(wallet);
+    }
+
+    @Test
+    public void shouldThrownWhenWalletNotEmptyTest() {
+        // given
+        var userId = 1L;
+        when(walletDao.findByUserId(userId)).thenReturn(Optional.of(wallet));
+        // when & then
+        assertThrows(NotEmptyWalletException.class, () -> service.deleteWallet(userId));
+        verify(walletDao, times(0)).deleteByUserId(userId);
+    }
+
+    @Test
+    public void shouldNotThrownWhenWalletIsEmptyTest() {
+        // given
+        var userId = 1L;
+        wallet.setQuantity(BigDecimal.ZERO);
+        when(walletDao.findByUserId(userId)).thenReturn(Optional.of(wallet));
+        // when & then
+        assertDoesNotThrow(() -> service.deleteWallet(userId));
+        verify(walletDao, times(1)).deleteByUserId(userId);
     }
 }

@@ -11,4 +11,5 @@ import java.util.Optional;
 @Transactional
 public interface WalletDao extends CrudRepository<Wallet, Long> {
     Optional<Wallet> findByUserId(Long userId);
+    void deleteByUserId(Long userId);
 }
